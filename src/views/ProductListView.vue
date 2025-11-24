@@ -64,7 +64,13 @@ watch(filteredProducts, () => {
       </el-col>
     </el-row>
 
-    <el-table :data="paginatedProducts" border stripe style="margin-top: 20px">
+    <el-table
+      :data="paginatedProducts"
+      class="desktop-table"
+      border
+      stripe
+      style="margin-top: 20px"
+    >
       <el-table-column prop="name" label="商品名稱" />
       <el-table-column prop="category" label="分類" />
       <el-table-column label="價格">
@@ -76,6 +82,30 @@ watch(filteredProducts, () => {
         </template>
       </el-table-column>
     </el-table>
+    <div class="mobile-card-list">
+      <div class="mobile-card" v-for="p in paginatedProducts" :key="p.id">
+        <h3>{{ p.name }}</h3>
+        <p>分類：{{ p.category }}</p>
+        <p>價格：NT${{ p.price.toLocaleString() }}</p>
+
+        <div class="stock">
+          <label>庫存：</label>
+          <StockControl v-model="p.stock" :productName="p.name" />
+        </div>
+      </div>
+    </div>
+    <footer class="footer">
+      <div class="total">商品總數：{{ filteredProducts.length }}</div>
+      <el-pagination
+        class="pagination"
+        style="margin-top: 20px; text-align: center"
+        background
+        layout="prev, pager, next"
+        :total="filteredProducts.length"
+        :page-size="itemsPerPage"
+        v-model:current-page="currentPage"
+      />
+    </footer>
   </div>
 </template>
 
@@ -131,7 +161,7 @@ watch(filteredProducts, () => {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    margin-top: 20px;
+    margin: 20px 0;
   }
 
   .mobile-card {
@@ -162,8 +192,7 @@ watch(filteredProducts, () => {
   .footer {
     grid-template-columns: 1fr;
     text-align: center;
-    gap: 6px;
-    padding: 10px 0;
+    padding: 5px 0;
   }
 
   .total {
