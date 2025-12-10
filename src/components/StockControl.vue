@@ -1,22 +1,20 @@
-<script setup>
+<script setup lang="ts">
 import { ElMessage } from 'element-plus'
 
-const props = defineProps({
-  modelValue: Number,
-  productName: String,
-})
-const emit = defineEmits(['update:modelValue'])
+const props = defineProps<{ modelValue: number; productName: string }>()
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: number): void
+}>()
 
-function handleChange(val) {
-  if (!Number.isInteger(val) || val < 0) {
-    ElMessage.error('請輸入有效整數')
+function handleChange(val: number | null) {
+  if (val === null || !Number.isInteger(val) || val < 0) {
+    ElMessage.error('請輸入有效的數值')
     return
   }
-  ElMessage.success(`「${props.productName}」庫存更新為 ${val}`)
   emit('update:modelValue', val)
 }
 </script>
 
 <template>
-  <el-input-number :model-value="modelValue" @change="handleChange" :min="0" size="small" />
+  <el-input-number :model-value="props.modelValue" @change="handleChange" :min="0" size="small" />
 </template>

@@ -1,10 +1,11 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { ElMessage } from 'element-plus'
 import SearchBar from '@/components/SearchBar.vue'
 import SortBar from '@/components/SortBar.vue'
 import StockControl from '@/components/StockControl.vue'
-
-const products = ref([
+import { CATEGORY_LIST, type Product, type FilterCategory, type SortOrder } from '@/types/product'
+const products = ref<Product[]>([
   { id: 1, name: 'iPhone 15 Pro', category: '手機', price: 38900, stock: 8 },
   { id: 2, name: 'MacBook Air M3', category: '筆電', price: 42900, stock: 5 },
   { id: 3, name: 'iPad Pro 13"', category: '平板', price: 35900, stock: 6 },
@@ -14,36 +15,53 @@ const products = ref([
   { id: 7, name: 'Samsung Galaxy S24', category: '手機', price: 32900, stock: 7 },
   { id: 8, name: 'Lenovo Tab P11', category: '平板', price: 10900, stock: 12 },
 ])
-const searchText = ref('')
-const selectedCategory = ref('全部')
-const sortOrder = ref('')
-const currentPage = ref(1)
+const searchText = ref<string>('')
+const selectedCategory = ref<FilterCategory>('全部')
+const sortOrder = ref<SortOrder>('')
+
+const currentPage = ref<number>(1)
 const itemsPerPage = 5
 
-const sortStrategies = {
+type SortFn = (a: Product, b: Product) => number
+const sortStrategies: Record<Exclude<SortOrder, ''>, SortFn> = {
   'price-asc': (a, b) => a.price - b.price,
   'price-desc': (a, b) => b.price - a.price,
   'stock-asc': (a, b) => a.stock - b.stock,
   'stock-desc': (a, b) => b.stock - a.stock,
 }
 
-const filteredProducts = computed(() => {
+function handleStockUpdate(val: number, product: Product) {
+  product.stock = val
+  ElMessage.success(`商品「${product.name}」庫存已更新為${val}`)
+}
+
+function filterProducts(list: Product[]): Product[] {
   const kw = searchText.value.trim().toLowerCase()
-  const sortFn = sortStrategies[sortOrder.value]
-  let list = products.value
-    .filter((p) => p.name.toLowerCase().includes(kw))
+  return list
+    .filter((p) => (kw ? p.name.toLowerCase().includes(kw) : true))
     .filter((p) => selectedCategory.value === '全部' || p.category === selectedCategory.value)
+}
+function sortProducts(list: Product[]): Product[] {
+  const sortKey = sortOrder.value
+  const sortFn = sortKey ? sortStrategies[sortKey] : undefined
   return sortFn ? [...list].sort(sortFn) : list
+}
+const filteredProducts = computed<Product[]>(() => {
+  return sortProducts(filterProducts(products.value))
 })
 
-const paginatedProducts = computed(() => {
+const paginatedProducts = computed<Product[]>(() => {
   const start = (currentPage.value - 1) * itemsPerPage
   return filteredProducts.value.slice(start, start + itemsPerPage)
 })
-const totalPages = computed(() => Math.ceil(filteredProducts.value.length / itemsPerPage))
-watch(filteredProducts, () => {
-  if (currentPage.value > totalPages.value) currentPage.value = 1
-})
+const totalPages = computed<number>(() => Math.ceil(filteredProducts.value.length / itemsPerPage))
+watch(
+  filteredProducts,
+  () => {
+    if (currentPage.value > totalPages.value) currentPage.value = 1
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -56,10 +74,7 @@ watch(filteredProducts, () => {
       <el-col :xs="24" :sm="12" :md="6">
         <el-select v-model="selectedCategory" placeholder="分類" clearable>
           <el-option label="全部商品" value="全部" />
-          <el-option label="手機" value="手機" />
-          <el-option label="筆電" value="筆電" />
-          <el-option label="平板" value="平板" />
-          <el-option label="耳機" value="耳機" />
+          <el-option v-for="cat in CATEGORY_LIST" :key="cat" :label="cat" :value="cat" />
         </el-select>
       </el-col>
     </el-row>
@@ -78,7 +93,11 @@ watch(filteredProducts, () => {
       </el-table-column>
       <el-table-column label="庫存">
         <template #default="{ row }">
-          <StockControl v-model="row.stock" :productName="row.name" />
+          <StockControl
+            :model-value="row.stock"
+            :productName="row.name"
+            @update:model-value="handleStockUpdate($event, row)"
+          />
         </template>
       </el-table-column>
     </el-table>
@@ -90,7 +109,11 @@ watch(filteredProducts, () => {
 
         <div class="stock">
           <label>庫存：</label>
-          <StockControl v-model="p.stock" :productName="p.name" />
+          <StockControl
+            :model-value="p.stock"
+            :productName="p.name"
+            @update:model-value="handleStockUpdate($event, p)"
+          />
         </div>
       </div>
     </div>

@@ -1,8 +1,9 @@
-<script setup>
-const props = defineProps({
-  modelValue: String,
-})
-const emit = defineEmits(['update:modelValue'])
+<script setup lang="ts">
+import { SORT_OPTIONS, type SortOrder } from '@/types/product'
+const props = defineProps<{
+  modelValue: SortOrder
+}>()
+const emit = defineEmits<{ (e: 'update:modelValue', value: SortOrder): void }>()
 </script>
 
 <template>
@@ -12,10 +13,6 @@ const emit = defineEmits(['update:modelValue'])
     clearable
     @update:model-value="emit('update:modelValue', $event)"
   >
-    <el-option label="不排序" value="" />
-    <el-option label="價格：高到低" value="price-desc" />
-    <el-option label="價格：低到高" value="price-asc" />
-    <el-option label="庫存：高到低" value="stock-desc" />
-    <el-option label="庫存：低到高" value="stock-asc" />
+    <el-option v-for="opt in SORT_OPTIONS" :key="opt.value" :label="opt.label" :value="opt.value" />
   </el-select>
 </template>
