@@ -23,7 +23,8 @@
 
 ## 使用技術 (Tech Stack)
 
-* **Vue 3** (使用 `<script setup>` 語法的組合式 API)
+* **Vue 3** (Composition API + Script Setup)
+* **TypeScript**
 * **Vite** (作為建置工具)
 * **Element Plus** (用於快速建構 UI 介面，如 Table, Select, InputNumber 等)
 * **GitHub Actions** (用於自動化 CI/CD 部署至 GitHub Pages)
