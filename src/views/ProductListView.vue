@@ -4,6 +4,7 @@ import { ElMessage } from 'element-plus'
 import SearchBar from '@/components/SearchBar.vue'
 import SortBar from '@/components/SortBar.vue'
 import StockControl from '@/components/StockControl.vue'
+import TableFooter from '@/components/TableFooter.vue'
 import { CATEGORY_LIST, type Product, type FilterCategory, type SortOrder } from '@/types/product'
 const products = ref<Product[]>([
   { id: 1, name: 'iPhone 15 Pro', category: '手機', price: 38900, stock: 8 },
@@ -117,18 +118,18 @@ watch(
         </div>
       </div>
     </div>
-    <footer class="footer">
-      <div class="total">商品總數：{{ filteredProducts.length }}</div>
-      <el-pagination
-        class="pagination"
-        style="margin-top: 20px; text-align: center"
-        background
-        layout="prev, pager, next"
-        :total="filteredProducts.length"
-        :page-size="itemsPerPage"
-        v-model:current-page="currentPage"
-      />
-    </footer>
+    <TableFooter>
+      <template #total>商品總數:{{ filterProducts.length }}筆</template>
+      <template #pagination>
+        <el-pagination
+          background
+          layout="prev, pager, next"
+          :total="filteredProducts.length"
+          :page-size="itemsPerPage"
+          v-model:current-page="currentPage"
+        />
+      </template>
+    </TableFooter>
   </div>
 </template>
 
@@ -151,28 +152,6 @@ watch(
 
 .desktop-table {
   display: table;
-}
-.footer {
-  position: fixed;
-  bottom: 3%;
-  left: 0;
-  width: 100%;
-  background-color: #fff;
-  border-top: 1px solid #dcdfe6;
-  padding: 10px 20px;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  align-items: center;
-  z-index: 10;
-}
-
-.total {
-  text-align: left;
-  font-weight: 500;
-}
-
-.pagination {
-  justify-self: center;
 }
 
 @media (max-width: 768px) {
@@ -211,19 +190,6 @@ watch(
     display: flex;
     align-items: center;
     gap: 6px;
-  }
-  .footer {
-    grid-template-columns: 1fr;
-    text-align: center;
-    padding: 5px 0;
-  }
-
-  .total {
-    text-align: center;
-  }
-
-  .pagination {
-    justify-self: center;
   }
 }
 </style>
